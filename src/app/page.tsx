@@ -8,17 +8,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+
+const ALLOWED_CONTENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+const ALLOWED_MAX_FILE_SIZE = 10_000_000
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
   file: z
     .custom<FileList>((val) => val instanceof FileList, "Required")
     .refine((files) => files.length > 0, 'Required')
+    .refine((files) => ALLOWED_CONTENT_TYPES.includes(files[0].type), 'Only PDF, JPG and PNG files are allowed')
+    .refine((files) => files[0].size <= ALLOWED_MAX_FILE_SIZE, 'Maximum file size allowed is 10MB')
 })
 
 export default function Home() {
@@ -125,6 +130,9 @@ export default function Home() {
                           <Input type="file" {...fileRef}/>
                         </FormControl>
                         <FormMessage />
+                        <FormDescription className="text-xs text-rose-700">
+                          Accepted file types: PDF, JPG, PNG. Max file size: 10MB.
+                        </FormDescription>
                       </FormItem>
                     )}
                   />
