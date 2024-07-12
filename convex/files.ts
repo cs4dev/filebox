@@ -1,6 +1,14 @@
-import {  ConvexError, v } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 import { mutation, MutationCtx, query, QueryCtx } from './_generated/server'
 import { getUser } from './users'
+
+export const generateUploadUrl = mutation(async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+        throw new ConvexError("Authenication Error: Sign In")
+    }
+    return await ctx.storage.generateUploadUrl()
+})
 
 async function hasAccessToOrg(
     ctx: QueryCtx | MutationCtx,
@@ -14,6 +22,7 @@ async function hasAccessToOrg(
 export const createFile = mutation({
     args: {
         name: v.string(),
+        fileId: v.id("_storage"),
         orgId: v.string()
     },
     async handler(ctx, args) {
@@ -25,7 +34,11 @@ export const createFile = mutation({
         if (!hasAccess) {
             throw new ConvexError("Forbidden Error: No Access to Org")
         }
-        await ctx.db.insert('files', { name: args.name, orgId: args.orgId })
+        await ctx.db.insert('files', {
+            name: args.name,
+            orgId: args.orgId,
+            fileId: args.fileId
+        })
     },
 })
 

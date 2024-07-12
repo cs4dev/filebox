@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading, OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
 
 export  function Header() {
     return <div className="border-b py-4 bg-gray-50">
@@ -7,7 +8,12 @@ export  function Header() {
             <div>FileBox</div>
             <div className="flex gap-2">
                 <OrganizationSwitcher />
-                <UserButton />
+                <ClerkLoaded>
+                    <UserButton />
+                </ClerkLoaded>
+                <ClerkLoading>
+                    <Loader2 className="size-8 animate-spin text-gray-400" />
+                </ClerkLoading>
                 <SignedOut>
                     <SignInButton>
                         <Button>Sign In</Button>
