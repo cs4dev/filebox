@@ -63,5 +63,5 @@ npm run dev
 ## Production Demo
 
 ```
-https://filebox.cs4dev.org
+https://filebox.cs4dev.org/
 ```

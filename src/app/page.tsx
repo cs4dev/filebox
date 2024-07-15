@@ -1,49 +1,29 @@
-"use client";
+import Link from "next/link";
 
-import { useOrganization, useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { UploadButton } from "./upload-button";
-import { DataTable } from "./files/data-table";
-import { columns } from "./files/columns";
-import Image from "next/image";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-
-export default function Home() {
-  const organization = useOrganization();
-  const user = useUser();
-
-  const orgId =
-    organization.isLoaded && user.isLoaded
-      ? organization.organization?.id ?? user.user?.id
-      : null;
-
-  const files = useQuery(api.files.getFiles, orgId ? { orgId } : "skip");
-  const isLoading = files === undefined;
-
+export default function LandingPage() {
   return (
-    <main className="container mx-auto pt-12">
-      {isLoading && (
-        <div className="flex flex-col gap-8 items-center mt-24">
-          <Loader2 className="size-24 animate-spin text-gray-600" />
-          Loading...
-        </div>
-      )}
-      {!isLoading && (
-        <>
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold">Your Files</h1>
-            <div className="flex gap-2">
-              <UploadButton />
+    <div className="bg-white">
+      <div className="relative isolate px-6 pt-20 lg:px-8">
+        <div className="mx-auto max-w-2xl py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              FileBox
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              A simple personal, web-based, api-driven file/document management
+              service.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Link
+                href="/dashboard/files"
+                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Get started
+              </Link>
             </div>
           </div>
-          <div className="mt-10">
-            <DataTable columns={columns} data={files} />
-          </div>
-        </>
-      )}
-    </main>
+        </div>
+      </div>
+    </div>
   );
 }
