@@ -17,3 +17,14 @@ export const patchEmptyOrgId = migration({
 });
 
 
+export const patchDefaultHiddenValue = migration({
+  table: "files",
+  migrateOne: async (ctx, files) => {
+    if (files.hidden === undefined) {
+      await ctx.db.patch(files._id, {
+        hidden: false
+      });
+    }
+  },
+});
+

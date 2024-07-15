@@ -43,7 +43,8 @@ export const createFile = mutation({
             orgId: args.orgId,
             fileId: args.fileId,
             type: args.type,
-            size: args.size
+            size: args.size,
+            hidden: false
         })
     },
 })
@@ -131,4 +132,54 @@ export const deleteFiles = mutation({
         })
        ])
     },
+})
+
+export const hideFile = mutation({
+    args: { fileId: v.id("files") },
+    async handler(ctx, args) {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new ConvexError("Forbidden Error: No Access to Org")
+        }
+        const file = await ctx.db.get(args.fileId)
+        if (!file) {
+            throw new ConvexError("File Not Found")
+        }
+
+        const hasAccess = await hasAccessToOrg(
+            ctx,
+            identity.tokenIdentifier,
+            file.orgId,
+        )
+        if (!hasAccess) {
+            throw new ConvexError("Forbidden Error: No Access to delete file")
+        }
+        
+        await ctx.db.patch(args.fileId, { hidden: true })
+    }
+})
+
+export const unHideFile = mutation({
+    args: { fileId: v.id("files") },
+    async handler(ctx, args) {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new ConvexError("Forbidden Error: No Access to Org")
+        }
+        const file = await ctx.db.get(args.fileId)
+        if (!file) {
+            throw new ConvexError("File Not Found")
+        }
+
+        const hasAccess = await hasAccessToOrg(
+            ctx,
+            identity.tokenIdentifier,
+            file.orgId,
+        )
+        if (!hasAccess) {
+            throw new ConvexError("Forbidden Error: No Access to delete file")
+        }
+        
+        await ctx.db.patch(args.fileId, { hidden: false })
+    }
 })

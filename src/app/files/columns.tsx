@@ -1,6 +1,6 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { Doc, Id } from "../../../convex/_generated/dataModel";
 import { format } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,7 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DownloadIcon, MoreHorizontal, TrashIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  Eye,
+  Flag,
+  FlagTriangleRight,
+  MoreHorizontal,
+  TrashIcon,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,6 +73,8 @@ function AreYouSureDialog({
 function FileAction({ file }: { file: Doc<"files"> }) {
   const fileUrl = useQuery(api.files.getFileUrl, { fileId: file.fileId });
   const deleteFile = useMutation(api.files.deleteFile);
+  const hideFile = useMutation(api.files.hideFile);
+  const unHideFile = useMutation(api.files.unHideFile);
   const { toast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   return (
@@ -96,6 +105,33 @@ function FileAction({ file }: { file: Doc<"files"> }) {
           >
             <DownloadIcon className="size-4" /> Download
           </DropdownMenuItem>
+          {file.hidden ? (
+            <DropdownMenuItem
+              className="flex gap-1 text-sky-700 items-center"
+              onClick={async () => {
+                await unHideFile({ fileId: file._id });
+                toast({
+                  variant: "success",
+                  title: `"${file.name}.${file.type}" unhide`,
+                });
+              }}
+            >
+              <Eye className="size-4" /> Unhide
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              className="flex gap-1 text-cyan-700 items-center"
+              onClick={async () => {
+                await hideFile({ fileId: file._id });
+                toast({
+                  variant: "success",
+                  title: `"${file.name}.${file.type}" hid`,
+                });
+              }}
+            >
+              <Flag className="size-4" /> Hide
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onClick={() => setIsConfirmOpen(true)}
             className="flex gap-1 text-rose-600 items-center"
@@ -136,6 +172,12 @@ function FilesAction({ files }: { files: Doc<"files">[] }) {
   );
 }
 
+const CustomFilterFn = (row: any, key: string, showHidden: string) => {
+  if (showHidden) return true;
+  if (!showHidden && row.original.hidden) return false;
+  return true;
+};
+
 export const columns: ColumnDef<Doc<"files">>[] = [
   {
     id: "select",
@@ -171,6 +213,12 @@ export const columns: ColumnDef<Doc<"files">>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => (
+      <div className="flex gap-2 items-center">
+        {row.original.hidden && <Flag className="text-cyan-700 size-4" />}
+        {String(row.getValue("name"))}
+      </div>
+    ),
   },
   {
     accessorKey: "_creationTime",
@@ -183,7 +231,6 @@ export const columns: ColumnDef<Doc<"files">>[] = [
     header: "File Type",
     cell: ({ row }) => String(row.getValue("type")).toUpperCase(),
   },
-
   {
     accessorKey: "size",
     header: "File Size (KB)",
@@ -196,5 +243,11 @@ export const columns: ColumnDef<Doc<"files">>[] = [
       const file = row.original;
       return <FileAction file={file} />;
     },
+  },
+  {
+    id: "hidden",
+    header: "Hidden",
+    accessorKey: "hidden",
+    filterFn: CustomFilterFn,
   },
 ];
