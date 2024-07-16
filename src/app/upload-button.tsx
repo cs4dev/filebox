@@ -32,22 +32,7 @@ import {
   ALLOWED_CONTENT_TYPES,
   ALLOWED_MAX_FILE_SIZE,
 } from "../../convex/schema";
-
-// const formSchema = z.object({
-//   title: z.string().min(1).max(200),
-//   file: z
-//     .custom<FileList>((val) => val instanceof FileList, "Required")
-//     .refine((files) => files.length > 0, "Required")
-//     // .refine(
-//     //   (files) =>
-//     //     Object.keys(ALLOWED_CONTENT_TYPES).includes(files[0].type as any),
-//     //   "Only PDF, JPG and PNG files are allowed"
-//     // )
-//     .refine(
-//       (files) => files[0].size <= ALLOWED_MAX_FILE_SIZE,
-//       "Maximum file size allowed is 10MB"
-//     ),
-// });
+import { checkImageDimensions } from "./util/image";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -63,7 +48,20 @@ const formSchema = z.object({
     .refine(
       (files) => files.length > 0 && files[0].size <= ALLOWED_MAX_FILE_SIZE,
       "Maximum file size allowed is 10MB"
-    ),
+    )
+    .refine(async (files) => {
+      if (files.length > 0 && files[0].type !== "application/pdf") {
+        const maxWidth = 3840;
+        const maxHeight = 2160;
+        const result = await checkImageDimensions(
+          files[0],
+          maxWidth,
+          maxHeight
+        );
+        return result.valid;
+      }
+      return true;
+    }, "Sorry, uploading 4K images is not supported"),
 });
 
 export function UploadButton() {
