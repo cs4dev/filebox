@@ -27,6 +27,8 @@ Convex offers Server Functions, Database, and File Storage, which perfectly meet
 
 For styling, I chose [shadcn](https://ui.shadcn.com/docs), a set of reusable components built on top of [tailwindcss](https://tailwindcss.com)
 
+TODO - use [pdf-parse](https://www.npmjs.com/package/pdf-parse) to check file corruption of PDF
+
 ## Getting Started
 
 Install dependencies
